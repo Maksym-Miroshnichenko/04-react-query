@@ -28,25 +28,26 @@ function App() {
   const [page, setPage] = useState(1);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['movies', query, page],
-    queryFn: () => fetchMovies({ query, page }),
-    enabled: query !== '',
-    placeholderData: keepPreviousData,
-  });
+const { data, isLoading, isError, isSuccess } = useQuery({
+  queryKey: ['movies', query, page],
+  queryFn: () => fetchMovies({ query, page }),
+  enabled: query !== '',
+  placeholderData: keepPreviousData,
+});
 
   const totalPages = data?.total_pages ?? 0;
 
   useEffect(() => {
-    if (data && data.results.length === 0) {
-      toast.error('No movies found for your request.');
-    }
-  }, [data]);
+  if (isSuccess && data.results.length === 0) {
+    toast.error('No movies found for your request.');
+  }
+}, [isSuccess, data]);
   useEffect(() => {
     if (isError) {
       toast.error('There was an error, please try again...');
     }
   }, [isError]);
+  
 
   const handleSearch = (newQuery: string) => {
     setQuery(newQuery);
@@ -71,7 +72,7 @@ function App() {
       ) : isError ? (
         <ErrorMessage />
       ) : (
-        data && data.results.length > 0 && (
+        isSuccess && data.results.length > 0 && (
           <MovieGrid movies={data.results} onSelect={handleSelectMovie} />
         )
       )}
